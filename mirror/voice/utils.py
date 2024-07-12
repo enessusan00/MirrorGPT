@@ -33,7 +33,7 @@ def text_to_speech(api_key, voice_id, text):
         return output_file
     else:
         raise ValueError(f"Error in text_to_speech: {response.content}, {response.status_code}")
-    
+
 def transcribe_round(audio_file_path):
     vad_audio_capture(audio_file_path)
     transcribed_text = whisper_transcribe(audio_file_path)
@@ -86,8 +86,6 @@ def vad_audio_capture(output_file_path):
     p.terminate()
 
     print("Finished recording.")
-    # At this point, audio_buffer contains the audio data while you were talking
-    # Save the recorded audio to a WAV file
     print(f"Saving audio to {output_file_path}")
     with wave.open(output_file_path, 'wb') as wf:
         wf.setnchannels(CHANNELS)
@@ -117,19 +115,17 @@ if __name__ == "__main__":
         raise ValueError(f"Invalid utility: {args.utility}")
     
     if args.utility == "text_to_speech":
-        # Check that voice_id and api_key are provided
         if not args.voice_id or not args.api_key:
             raise ValueError(f"voice_id and api_key must be provided for utility: {args.utility}")
         output_file = utility_map[args.utility](args.api_key, args.voice_id, args.text)
         print(f"Saved audio to {output_file}")
     elif args.utility == "transcribe_round":
-        text = utility_map[args.utility](args.output_file)
+        text = utility_map[args.utility](args.input_file)
         print(f"Transcribed text: {text}")
     elif args.utility == "vad_audio_capture":
         vad_audio_capture(args.output_file)
     elif args.utility == "whisper_transcribe":
-        text = whisper_transcribe(args.output_file)
-        print(f"Transcribed text:\n{text}\nfrom file: {args.output_file}")
+        text = whisper_transcribe(args.input_file)
+        print(f"Transcribed text:\n{text}\nfrom file: {args.input_file}")
     else:
         raise ValueError(f"Invalid utility: {args.utility}")
-    

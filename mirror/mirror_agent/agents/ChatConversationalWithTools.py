@@ -1,5 +1,4 @@
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.agents import Tool, create_json_agent
 from langchain.memory import ConversationBufferMemory
@@ -39,7 +38,7 @@ def build_agent(mirror_name, tools, data_path, partial_ok=True, voice_out=False,
     """
     mirror_name = mirror_name
     data_path = data_path
-    llm = OpenAI(verbose=True)
+    llm = ChatOpenAI(model="gpt-3.5-turbo", verbose=True)  # Burada ChatOpenAI ve model parametresini güncelledik
     tools = create_tools(tools=tools, llm=llm, persist_directory=data_path)
     parser = CustomConvoParser()
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
@@ -73,7 +72,7 @@ def create_tools(tools, llm, persist_directory):
         json_toolkit = JsonToolkit(spec=json_spec)
 
         json_agent_executor = create_json_agent(
-            llm=OpenAI(temperature=0),
+            llm=ChatOpenAI(model="gpt-3.5-turbo", temperature=0),  # Burada ChatOpenAI ve model parametresini güncelledik
             toolkit=json_toolkit,
             verbose=True
         )

@@ -1,8 +1,12 @@
 import argparse
 import os
-
 from langchain.vectorstores import Chroma
 from langchain.embeddings.openai import OpenAIEmbeddings
+from dotenv import load_dotenv
+
+# Belirli bir dizinden .env dosyasını yükleyin
+env_path = os.path.join('config', '.env')
+load_dotenv(dotenv_path=env_path)
 
 def load_chromalocal(data, persist_directory="data/local/loaded"):
     """Loads the data into the Chroma local data store.
@@ -14,13 +18,13 @@ def load_chromalocal(data, persist_directory="data/local/loaded"):
         Chroma: Chroma data store.
     """
     print(f"Loading data into Chroma local data store: {persist_directory}")
-    embedding = OpenAIEmbeddings()
+    embedding = OpenAIEmbeddings(openai_api_key=os.getenv("OPENAI_API_KEY"))
     return Chroma.from_texts(texts=data, embedding=embedding, persist_directory=persist_directory)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input-file", type=str, help="Path to the input file")
-    parser.add_argument('-d', '--data-store', choices=['chromalocal'], help='Name of the data store to use as the destination')
+    parser.add_argument("-i", "--input-file", type=str, help="Path to the input file", required=True)
+    parser.add_argument('-d', '--data-store', choices=['chromalocal'], help='Name of the data store to use as the destination', required=True)
     parser.add_argument('-p', '--path', type=str, help='Path to the location in the data store')
     args = parser.parse_args()
 

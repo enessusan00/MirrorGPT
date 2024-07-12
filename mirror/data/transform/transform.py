@@ -1,17 +1,23 @@
 import argparse
-
+import os
 from langchain import PromptTemplate
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import HumanMessage
+from dotenv import load_dotenv
+
+# Belirli bir dizinden .env dosyasını yükleyin
+env_path = os.path.join('config', '.env')
+load_dotenv(dotenv_path=env_path)
 
 def statements(data):
     """
-        Transforms the data into a series of single-sentence facts about the data.
+    Transforms the data into a series of single-sentence facts about the data.
 
-        Args:
-            data (str): Data to be transformed.
+    Args:
+        data (str): Data to be transformed.
 
-        Returns:
-            str: Transformed data.
+    Returns:
+        str: Transformed data.
     """
     print("Transforming data into a series of single-sentence facts about the data.")
     # Use LLM to turn the resume into a series of single-sentence facts about the resume
@@ -33,16 +39,18 @@ def statements(data):
     )
     formatted_prompt = prompt.format(data=data)
 
-    llm = OpenAI()
-    llm_facts = llm(formatted_prompt)
-    print(f"Transformed into Facts: {llm_facts}")
-    return llm_facts
+    # Initialize the ChatOpenAI LLM with the API key
+    llm = ChatOpenAI(openai_api_key=os.getenv("OPENAI_API_KEY"), model="gpt-3.5-turbo")
+    llm_response = llm([HumanMessage(content=formatted_prompt)])
+    facts_text = llm_response.content
+    print(f"Transformed into Facts: {facts_text}")
+    return facts_text
 
 if __name__ == '__main__':
     # Parse arguments
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--input-file', type=str)
-    parser.add_argument('-o', '--output-file', type=str)
+    parser.add_argument('-i', '--input-file', type=str, required=True)
+    parser.add_argument('-o', '--output-file', type=str, required=True)
     parser.add_argument('-t', '--transformation', choices=['statements'], default="statements", help='Transformation type to apply to input data')
     args = parser.parse_args()
 

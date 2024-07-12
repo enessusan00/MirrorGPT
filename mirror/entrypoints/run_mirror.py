@@ -1,11 +1,32 @@
-# Runs the mirror agent
-
 import os
+import sys
 import argparse
 from playsound import playsound
+from dotenv import load_dotenv
 
-from mirror.mirror_agent.agent import load_mirror_agent
-from mirror.voice.utils import text_to_speech, transcribe_round
+# .env dosyasını yükleyin
+env_path = os.path.join('config', '.env')
+load_dotenv(dotenv_path=env_path)
+
+# Proje kök dizinini PYTHONPATH'e ekleyin
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
+
+# Dosya yollarını ve mevcut dizini yazdırmak için ekleme
+print("Current working directory:", os.getcwd())
+print("PYTHONPATH:", sys.path)
+print("OPENAI_API_KEY:", os.getenv('OPENAI_API_KEY'))
+
+try:
+    from mirror.mirror_agent.agent import load_mirror_agent
+    from mirror.voice.utils import text_to_speech, transcribe_round
+    print("Import successful: text_to_speech, transcribe_round")
+except ImportError as e:
+    print("ImportError:", e)
+    # utils.py dosyasının içeriğini kontrol et
+    utils_file_path = os.path.join(os.path.dirname(__file__), '..', 'voice', 'utils.py')
+    with open(utils_file_path, 'r') as file:
+        print(file.read())
+    raise
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -18,8 +39,7 @@ if __name__ == "__main__":
     parser.add_argument("-vi", "--voice-id", type=str, default=os.environ.get("ELEVENLABS_VOICE_ID"), help="Voice ID to use for text-to-speech on Mirror output")
     parser.add_argument("-ti", "--transcribe-input", type=bool, default=False, help="Boolean flag to transcribe user input instead of using text input")
     parser.add_argument("-g", "--greeting", type=str, required=True, help="First sentence to say to the Mirror")
-    parser.add_argument("-tr", "--training-mode", type=bool, default=False,
-                        help="[Coming Soon] Boolean flag to make True if data from this session should be used to further train the mirror")
+    parser.add_argument("-tr", "--training-mode", type=bool, default=False, help="[Coming Soon] Boolean flag to make True if data from this session should be used to further train the mirror")
 
     args = parser.parse_args()
 
@@ -35,7 +55,6 @@ if __name__ == "__main__":
     next_input = args.greeting
     while True:
         print(f"Continuing conversation with: {next_input}")
-        print(type(next_input))
         mirror_response = mirror.run(next_input)
         if args.voice_out:
             audio_file = text_to_speech(api_key=args.voice_api_key, voice_id=args.voice_id, text=mirror_response)
